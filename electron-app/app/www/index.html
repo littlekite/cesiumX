@@ -1,0 +1,634 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <script src="jquery-3.4.1.js"></script>
+  <script src="Cesium/Cesium.js"></script>
+  <script src="common.js"></script>
+  <link rel="stylesheet" href="layui/css/layui.css"  media="all">
+  <script src="layui/layui.js"></script>
+  <link href="Cesium/Widgets/widgets.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+</head>
+<style>
+  html, body, #cesiumContainer {
+      height: 100%; margin: 0; padding: 0; overflow: hidden;
+  }
+  .layer_info {
+    bottom: 0;
+    height: 28px;
+    line-height: 28px;
+    z-index: 11;
+    width: 342px;
+    padding-left: 6px;
+    left: 0;
+    position: fixed;
+    background-color: rgba(0, 0, 0, .5);
+  }
+</style>
+<body style="">
+  <div id="cesiumContainer" style=""></div>
+      <!-- 经纬度信息start -->
+   <div id="think_page_trace" style="position: fixed;bottom:0;right:0;font-size:14px;width:100%;z-index: 999999;color: #000;text-align:left;font-family:'微软雅黑';">
+    <div id="think_page_trace_tab" style="display: block; background: white; margin: 0px; height: 250px;">
+        <div id="think_page_trace_tab_tit" style="height:30px;padding: 6px 12px 0;border-bottom:1px solid #ececec;border-top:1px solid #ececec;font-size:16px">
+                <span style="color: rgb(0, 0, 0); padding-right: 12px; height: 30px; line-height: 30px; display: inline-block; margin-right: 3px; cursor: pointer; font-weight: 700;">模型操作</span>
+                
+                <span style="color: rgb(153, 153, 153); padding-right: 12px; height: 30px; line-height: 30px; display: inline-block; margin-right: 3px; cursor: pointer; font-weight: 700;">其他</span>
+            
+        </div>
+        <div id="think_page_trace_tab_cont" style="overflow:auto;height:212px;padding:0;line-height: 24px">
+             <div style="display: block;">
+                <fieldset class="layui-field-title" style="margin-top: 30px;">
+                  <legend>模型高度</legend>
+                </fieldset>
+                <div id="slideTest1" class="demo-slider"></div>
+                 <fieldset class="layui-field-title" style="margin-top: 30px;">
+                  <legend>模型角度X轴</legend>
+                </fieldset>
+                <div id="slideTest2" class="demo-slider"></div>
+                <fieldset class="layui-field-title" style="margin-top: 30px;">
+                  <legend>模型角度Y轴</legend>
+                </fieldset>
+                <div id="slideTest3" class="demo-slider"></div>
+                <fieldset class="layui-field-title" style="margin-top: 30px;">
+                  <legend>模型角度Z轴</legend>
+                </fieldset>
+                <div id="slideTest4" class="demo-slider"></div>
+                 <fieldset class="layui-field-title" style="margin-top: 30px;">
+                  <legend>模型位置 经度</legend>
+                </fieldset>
+                <div id="slideTest11" style="margin: 30px 20px; display: inline-block;"></div>
+                <div id="slideTest12" style="margin: 30px 20px; display: inline-block;"></div>
+                <div id="slideTest13" style="margin: 30px 20px; display: inline-block;"></div>
+                <div id="slideTest14" style="margin: 30px 20px; display: inline-block;"></div>
+                <div id="slideTest15" style="margin: 30px 20px; display: inline-block;"></div>
+                <fieldset class="layui-field-title" style="margin-top: 30px;">
+                  <legend>模型位置 纬度</legend>
+                </fieldset>
+                <div id="slideTest17" style="margin: 30px 20px; display: inline-block;"></div>
+                <div id="slideTest18" style="margin: 35px 20px; display: inline-block;"></div>
+                <div id="slideTest19" style="margin: 35px 20px; display: inline-block;"></div>
+                <div id="slideTest20" style="margin: 35px 20px; display: inline-block;"></div>
+                <div id="slideTest21" style="margin: 35px 20px; display: inline-block;"></div>
+                <fieldset class="layui-field-title" style="margin-top: 30px;">
+                <div style="width:100px;height:50px;float:left;">
+                  <font size="2">经度：<span id="longitude_show"></span></font>
+                </div>
+                <div style="width:100px;height:50px;float:left;">
+                  <font size="2">纬度：<span id="latitude_show"></span></font>
+                </div>
+                <div style="width:100px;height:50px;float:left;">
+                  <font size="2" >视角高：<span id="altitude_show"></span>km</font>
+                </div>
+                <div style="width:250px;height:50px;float:left;">
+                  <font size="2">heading：<span id="altitude_heading"></span></font>
+                </div>
+                 <div style="width:240px;height:50px;float:left;">
+                  <font size="2">pitch：<span id="altitude_pitch"></span></font>
+                </div>
+                 <div style="width:250px;height:50px;float:left;">
+                  <font size="2">roll ：<span id="altitude_roll"></span></font>
+                </div>
+                 </fieldset>
+            </div>
+            <div style="display: none;">
+            </div>
+        </div>
+        
+    </div>
+    <div id="think_page_trace_close" style="display: block; text-align: right; height: 15px; position: absolute; top: 10px; right: 12px; cursor: pointer;"><img style="vertical-align:top;" src="data:image/gif;base64,R0lGODlhDwAPAJEAAAAAAAMDA////wAAACH/C1hNUCBEYXRhWE1QPD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4gPHg6eG1wbWV0YSB4bWxuczp4PSJhZG9iZTpuczptZXRhLyIgeDp4bXB0az0iQWRvYmUgWE1QIENvcmUgNS4wLWMwNjAgNjEuMTM0Nzc3LCAyMDEwLzAyLzEyLTE3OjMyOjAwICAgICAgICAiPiA8cmRmOlJERiB4bWxuczpyZGY9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMiPiA8cmRmOkRlc2NyaXB0aW9uIHJkZjphYm91dD0iIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtbG5zOnhtcE1NPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvbW0vIiB4bWxuczpzdFJlZj0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL3NUeXBlL1Jlc291cmNlUmVmIyIgeG1wOkNyZWF0b3JUb29sPSJBZG9iZSBQaG90b3Nob3AgQ1M1IFdpbmRvd3MiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MUQxMjc1MUJCQUJDMTFFMTk0OUVGRjc3QzU4RURFNkEiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MUQxMjc1MUNCQUJDMTFFMTk0OUVGRjc3QzU4RURFNkEiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDoxRDEyNzUxOUJBQkMxMUUxOTQ5RUZGNzdDNThFREU2QSIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDoxRDEyNzUxQUJBQkMxMUUxOTQ5RUZGNzdDNThFREU2QSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PgH//v38+/r5+Pf29fTz8vHw7+7t7Ovq6ejn5uXk4+Lh4N/e3dzb2tnY19bV1NPS0dDPzs3My8rJyMfGxcTDwsHAv769vLu6ubi3trW0s7KxsK+urayrqqmop6alpKOioaCfnp2cm5qZmJeWlZSTkpGQj46NjIuKiYiHhoWEg4KBgH9+fXx7enl4d3Z1dHNycXBvbm1sa2ppaGdmZWRjYmFgX15dXFtaWVhXVlVUU1JRUE9OTUxLSklIR0ZFRENCQUA/Pj08Ozo5ODc2NTQzMjEwLy4tLCsqKSgnJiUkIyIhIB8eHRwbGhkYFxYVFBMSERAPDg0MCwoJCAcGBQQDAgEAACH5BAAAAAAALAAAAAAPAA8AAAIdjI6JZqotoJPR1fnsgRR3C2jZl3Ai9aWZZooV+RQAOw=="></div>
+  </div>   
+<div id="think_page_trace_open" style="height: 30px; float: right; text-align: right; overflow: hidden; position: fixed; bottom: 0px; right: 0px; color: rgb(0, 0, 0); line-height: 30px; cursor: pointer; display: block;">
+    <div style="background:#232323;color:#FFF;padding:0 6px;float:right;line-height:30px;font-size:14px">0.055004s </div>
+</div>
+
+  <!-- 经纬度信息end -->    
+    <!-- Insert this line above script imports  -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <!-- normal script imports etc  -->
+    <script src="jquery-3.4.1.js"></script>      
+    <!-- Insert this line after script imports -->
+    <script>if (window.module) module = window.module;</script>
+    <script>
+    var __cesiumScreenSpaceEventHandlerFunc;
+    /*
+    var a = "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&x={x}&y={y}&z={z}&s=Gali";
+    viewer = new Cesium.Viewer("cesiumContainer", {
+    imageryProvider: new Cesium.UrlTemplateImageryProvider({
+      url: a
+    }),
+    */                                      
+    //后端判断                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      是否存在离线地图  如果没有则使用google地图并缓存
+    //var a = "http://mt1.google.cn/vt/lyrs=s&hl=zh-CN&x={x}&y={y}&z={z}&s=Gali"; 
+    var a = 'file://' + __dirname + '/model2/{x}/{y}/{z}/Gali.jpg';  
+         viewer = new Cesium.Viewer("cesiumContainer", {
+                    imageryProvider: new Cesium.UrlTemplateImageryProvider({
+                      url: a
+                    }),
+                    //发送 链接 保存目标图像资源
+                    geocoder: false,
+                    homeButton: false,
+                    sceneModePicker: false,
+                    baseLayerPicker: false,
+                    navigationHelpButton: false,
+                    animation: false,
+                    contextOptions: {
+                      webgl: {
+                        preserveDrawingBuffer: true,
+                        alpha: true
+                      },
+                      allowTextureFilterAnisotropic: true
+                    },
+                    shouldAnimate: true,
+                    timeline: false,
+                    infoBox: true,
+                    fullscreenButton: false,
+                    selectionIndicator: true,
+                    vrButton: false
+                });
+                __cesiumScreenSpaceEventHandlerFunc = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas, event);
+                
+                viewer.scene.fog.enabled = false;
+                viewer.scene.globe.show = true;
+                viewer.scene.skyBox.show = true;
+                viewer.scene.sun.show = true;
+                viewer.scene.skyAtmosphere.show = true;
+                viewer.scene.moon.show = true;
+                viewer.scene.globe.enableLighting = true;
+                viewer.scene.globe.depthTestAgainstTerrain = true;
+                viewer._cesiumWidget._creditContainer.style.display = "none";
+                var f = viewer.scene.primitives.add(new Cesium.LabelCollection());
+                
+                Object.defineProperty(XMLHttpRequest.prototype,"status",{
+                    get: function(status) {
+                        /*
+                        console.log({
+                            url: this.responseURL,
+                            data: this.response
+                        })
+                        */
+                        if (this.responseURL.indexOf("mt1.google.cn") != -1 && this.responseURL != ''){
+                             //异步ajax下载URL图像
+                            $.ajax({
+                               type: "POST",
+                               url: "http://www.c.com/api.php?m=1",
+                               data: "url="+this.responseURL,
+                               success: function(msg){
+                                 alert( "Data Saved: " + msg );
+                               }
+                           })
+                        } else {
+                            /*
+                            console.log({
+                                url: this.responseURL,
+                                data: this.response
+                            })
+                            */
+                        }
+                       
+                    }
+                });
+                
+                var h = document.getElementById("longitude_show");
+                var d = document.getElementById("latitude_show");
+                var c = document.getElementById("altitude_show");
+                var ah = document.getElementById("altitude_heading");
+                var ap = document.getElementById("altitude_pitch");
+                var ar = document.getElementById("altitude_roll");
+                var b = viewer.scene.canvas;
+                var g = viewer.scene.globe.ellipsoid;
+                var e = new Cesium.ScreenSpaceEventHandler(b);
+                e.setInputAction(function (o) {
+                var r = viewer.camera.pickEllipsoid(o.endPosition, g);
+                if (r) {
+                  var q = viewer.scene.globe.ellipsoid.cartesianToCartographic(r);
+                  var p = Cesium.Math.toDegrees(q.latitude).toFixed(4);
+                  var n = Cesium.Math.toDegrees(q.longitude).toFixed(4);
+                  var m = (viewer.camera.positionCartographic.height / 1000).toFixed(2);
+                  h.innerHTML = n;
+                  d.innerHTML = p;
+                  c.innerHTML = m;
+                  
+                  ah.innerHTML = viewer.camera.heading;
+                  ap.innerHTML = viewer.camera.pitch;
+                  ar.innerHTML = viewer.camera.roll;
+                }
+                }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);  
+                viewer._cesiumWidget._creditContainer.style.display="none"; 
+                
+                /*
+                var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+                    url : 'tilesets/new1_9/tileset.json'
+                }));
+                */
+               tileset = new Cesium.Cesium3DTileset({
+                url: "tilesets/TilesetWithDiscreteLOD/tileset.json"
+               //url : 'tilesets/new1_9/tileset.json'
+               });
+            
+              viewer.scene.primitives.add(tileset);
+                var c = 120.7940352581422;
+                var f = 27.82943987776276;
+                var a = -35.5;
+                var e = 0.12;
+                var d = 0.16;
+                     var b = 0;
+                tileset.readyPromise.then(function (l) {
+                  var g = Cesium.Cartesian3.fromDegrees(c, f, a);
+                  var h = Cesium.Transforms.eastNorthUpToFixedFrame(g);
+                  var j = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationX(Cesium.Math.toRadians(d)));
+                  Cesium.Matrix4.multiply(h, j, h);
+                  tileset._root.transform = h;
+                  //如果是健康监测 则选择其他
+            
+                    viewer.camera.flyTo({
+                      destination: Cesium.Cartesian3.fromDegrees(120.6890, 27.7090, 150.47813997),
+                      orientation: {
+                        heading: Cesium.Math.toRadians(25),
+                        pitch: Cesium.Math.toRadians(-5),
+                        roll: Cesium.Math.toRadians(0)
+                      }
+                    })
+                
+            
+               })
+    
+    /*
+    var cs = 108.7698078;
+    var f = 34.21858;
+    var a = -31;
+    var e = 0.6;
+    //var ds = 0.26;
+    var b = 0;
+    var rx = 0;
+    var ry = 0;
+    var rz = -19;
+    
+    var cs_s = 108.7651;
+    */
+    
+    /*
+    tileset.readyPromise.then(function (l) {
+      ajust();
+      //var g = Cesium.Cartesian3.fromDegrees(cs, f, a);
+      //var hs = Cesium.Transforms.eastNorthUpToFixedFrame(g);
+      //var j = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationX(Cesium.Math.toRadians(ds)));
+      //Cesium.Matrix4.multiply(hs, j, hs);
+      //tileset._root.transform = hs;
+      //显示调整位置的按钮
+      layui.use('slider', function(){
+          var $ = layui.$
+          ,slider = layui.slider;
+          //默认滑块
+          slider.render({
+            elem: '#slideTest1'
+             ,min: -100 //最小值
+             ,max: 100 //最大值
+            ,value: a //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              //ajustHeight(value);
+              a = value;
+              ajust();
+            }
+          });
+          slider.render({
+            elem: '#slideTest2'
+             ,min: -180 //最小值
+             ,max: 180 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              //ajustRotateX(value);
+              rx = value;
+              ajust();
+            }
+          });
+          slider.render({
+            elem: '#slideTest3'
+             ,min: -180 //最小值
+             ,max: 180 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              //ajustRotateY(value);
+              ry = value;
+              ajust();
+            }
+          });
+          slider.render({
+            elem: '#slideTest4'
+             ,min: -180 //最小值
+             ,max: 180 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              rz = value;
+              ajust();
+            }
+          });
+          
+           //垂直滑块
+          var s_11;
+          slider.render({
+            elem: '#slideTest11'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_11) {
+                 s_11 = value; 
+                 if(value > 0) {
+                    cs = jsCalculate.accAdd(cs,0.01);
+                 }
+                 if(value < 0) {
+                    cs = jsCalculate.accSub(cs,0.01);
+                 }
+                 console.log(cs);
+                 ajust();
+              } 
+            }
+          });
+          var s_12;
+          slider.render({
+            elem: '#slideTest12'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_12) {
+                 s_12 = value; 
+                 if(value > 0) {
+                    cs = jsCalculate.accAdd(cs,0.001);
+                 }
+                 if(value < 0) {
+                    cs = jsCalculate.accSub(cs,0.001);
+                 }
+                 console.log(cs);
+                 ajust();
+              } 
+            }
+          });
+          var s_13;
+          slider.render({
+            elem: '#slideTest13'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_13) {
+                 s_13 = value; 
+                 if(value > 0) {
+                    cs = jsCalculate.accAdd(cs,0.00001);
+                 }
+                 if(value < 0) {
+                    cs = jsCalculate.accSub(cs,0.00001);
+                 }
+                 console.log(cs);
+                 ajust();
+              } 
+            }
+          });
+          var s_14;
+          slider.render({
+            elem: '#slideTest14'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_14) {
+                 s_14 = value; 
+                 if(value > 0) {
+                    cs = jsCalculate.accAdd(cs,0.00001);
+                 }
+                 if(value < 0) {
+                    cs = jsCalculate.accSub(cs,0.00001);
+                 }
+                 console.log(cs);
+                 ajust();
+              } 
+            }
+          });
+          
+         var s_15;
+          slider.render({
+            elem: '#slideTest15'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_15) {
+                 s_15 = value; 
+                 if(value > 0) {
+                    cs = jsCalculate.accAdd(cs,0.0000001);
+                 }
+                 if(value < 0) {
+                    cs = jsCalculate.accSub(cs,0.0000001);
+                 }
+                 console.log(cs);
+                 ajust();
+              } 
+            }
+          });
+
+          
+          
+          
+          //垂直滑块
+          var s_17;
+          slider.render({
+            elem: '#slideTest17'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_17) {
+                 s_17 = value; 
+                 if(value > 0) {
+                    f = jsCalculate.accAdd(f,0.01);
+                 }
+                 if(value < 0) {
+                    f = jsCalculate.accSub(f,0.01);
+                 }
+                 console.log(f);
+                 ajust();
+              } 
+            }
+          });
+          var s_18;
+          slider.render({
+            elem: '#slideTest18'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_18) {
+                 s_18 = value; 
+                 if(value > 0) {
+                    f = jsCalculate.accAdd(f,0.001);
+                 }
+                 if(value < 0) {
+                    f = jsCalculate.accSub(f,0.001);
+                 }
+                 console.log(f);
+                 ajust();
+              } 
+            }
+          });
+          var s_19;
+          slider.render({
+            elem: '#slideTest19'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_19) {
+                 s_19 = value; 
+                 if(value > 0) {
+                    f = jsCalculate.accAdd(f,0.00001);
+                 }
+                 if(value < 0) {
+                    f = jsCalculate.accSub(f,0.00001);
+                 }
+                 console.log(f);
+                 ajust();
+              } 
+            }
+          });
+          var s_20;
+          slider.render({
+            elem: '#slideTest20'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_20) {
+                 s_20 = value; 
+                 if(value > 0) {
+                    f = jsCalculate.accAdd(f,0.00001);
+                 }
+                 if(value < 0) {
+                    f = jsCalculate.accSub(f,0.00001);
+                 }
+                 console.log(f);
+                 ajust();
+              } 
+            }
+         });
+         var s_21;
+          slider.render({
+            elem: '#slideTest21'
+            ,type: 'vertical' //垂直滑块
+            ,min: -1 //最小值
+            ,max: 1 //最大值
+            ,value: 0 //初始值
+            ,input: true //输入框
+            ,change: function(value){
+              if(value != s_21) {
+                 s_21 = value; 
+                 if(value > 0) {
+                    f = jsCalculate.accAdd(f,0.0000001);
+                 }
+                 if(value < 0) {
+                    f = jsCalculate.accSub(f,0.0000001);
+                 }
+                 console.log(f);
+                 ajust();
+              } 
+            }
+          });
+         
+      });
+      
+      
+      
+    });
+    function ajust(){
+    	var position = Cesium.Cartesian3.fromDegrees(cs, f, a);
+        var mat = Cesium.Transforms.eastNorthUpToFixedFrame(position);
+        var rotationX = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationX(Cesium.Math.toRadians(rx)));
+        var rotationY = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationY(Cesium.Math.toRadians(ry)));
+        var rotationZ = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationZ(Cesium.Math.toRadians(rz)));
+        
+        Cesium.Matrix4.multiply(mat, rotationX, mat);
+        Cesium.Matrix4.multiply(mat, rotationY, mat);
+        Cesium.Matrix4.multiply(mat, rotationZ, mat);
+        tileset._root.transform = mat;
+    }
+
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(108.7660, 34.2169, 20),
+      orientation: {
+          heading : 1.20557301878463,
+          pitch : -0.14469579008263844,  
+          roll : 0.002944956401932153
+      }
+    })
+    */
+</script>
+<script type="text/javascript">
+    (function(){
+        var tab_tit  = document.getElementById('think_page_trace_tab_tit').getElementsByTagName('span');
+        var tab_cont = document.getElementById('think_page_trace_tab_cont').getElementsByTagName('div');
+        var open     = document.getElementById('think_page_trace_open');
+        var close    = document.getElementById('think_page_trace_close').children[0];
+        var trace    = document.getElementById('think_page_trace_tab');
+        var cookie   = document.cookie.match(/thinkphp_show_page_trace=(\d\|\d)/);
+        var history  = (cookie && typeof cookie[1] != 'undefined' && cookie[1].split('|')) || [0,0];
+        open.onclick = function(){
+            trace.style.display = 'block';
+            this.style.display = 'none';
+            close.parentNode.style.display = 'block';
+            history[0] = 1;
+            document.cookie = 'thinkphp_show_page_trace='+history.join('|')
+        }
+        close.onclick = function(){
+            trace.style.display = 'none';
+            this.parentNode.style.display = 'none';
+            open.style.display = 'block';
+            history[0] = 0;
+            document.cookie = 'thinkphp_show_page_trace='+history.join('|')
+        }
+        for(var i = 0; i < tab_tit.length; i++){
+            tab_tit[i].onclick = (function(i){
+                return function(){
+                    tab_cont.length = 2;
+                    for(var j = 0; j < 2; j++){
+                        console.log(j);
+                        //tab_cont[j].style.display = 'none';
+                        //tab_tit[j].style.color = '#999';
+                    }
+                    tab_cont[i].style.display = 'block';
+                    tab_tit[i].style.color = '#000';
+                    history[1] = i;
+                    document.cookie = 'thinkphp_show_page_trace='+history.join('|')
+                }
+            })(i)
+        }
+        parseInt(history[0]) && open.click();
+        tab_tit[history[1]].click();
+    })();
+</script>
+</body>
+</html>
