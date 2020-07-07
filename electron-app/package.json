@@ -20,7 +20,7 @@
     "app-build": "node scripts/app-build.js"
   },
   "devDependencies": {
-    "electron": "2.0.7",
+    "electron": "7.2.4",
     "electron-builder": "19.53.4",
     "electron-packager": "^12.1.0",
     "minimist": "^1.2.0",
